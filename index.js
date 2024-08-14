@@ -1,6 +1,8 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const app = express()
+const Person = require('./models/person')
 
 app.use(express.json())
 const cors = require('cors')
@@ -49,8 +51,9 @@ app.get('/', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-    //console.log(request.method)
-    response.json(persons)
+    Person.find({}).then(persons => {
+      response.json(persons)
+    })
 })
 
 app.get('/info', (request, response) => {
@@ -75,11 +78,13 @@ app.delete('/api/persons/:id', (request, response) => {
   response.status(204).end()
 })
 
+/*
 const getRandomInt = (min, max) => {
     const minCeiled = Math.ceil(min);
     const maxFloored = Math.floor(max);
     return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
   }
+*/
 
 /*const generateId = () => {
   const maxId = persons.length > 0
@@ -90,32 +95,32 @@ const getRandomInt = (min, max) => {
 
 app.post('/api/persons', (request, response) => {
   const body = request.body
-  //console.log("Skal poste. ",request.body)
+ 
 
   if (!body.name || !body.number) {
     return response.status(400).json({ 
       error: 'Missing name or/and number' 
     })
   }
+  
   //const index = persons.findIndex(person => person.name === body.name)
-  if (persons.find(person => person.name === body.name)) {
+  /*if (persons.find(person => person.name === body.name)) {
     return response.status(400).json({ 
         error: 'name must be unique' 
       })
-  }
-
-  const person = {
+  }*/
+  const person = new Person({
     name: body.name,
     number: body.number,
-    id: String(Math.floor(Math.random() * 1000000))
-  }
+  })
+  person.save().then(savedPerson => {
+    response.json(savedPerson)
+  })
 
-  persons = persons.concat(person)
-
-  response.json(person)
+  
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
