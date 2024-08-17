@@ -1,8 +1,8 @@
-POST https://fullstackopenpart3-qe9q.onrender.com/api/persons
+//POST https://fullstackopenpart3-qe9q.onrender.com/api/persons
+POST http://localhost:3001/api/persons
 Content-Type: application/json
 
 {
-    "id": "5",
-    "name": "Oggy",
+    "name": "Og",
     "number": "94434112"
 }
