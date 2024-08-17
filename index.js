@@ -22,17 +22,15 @@ app.use(requestLogger)
 
 
 
-morgan.token('postData',  (request, response) => { 
-    if (request.method === 'POST') {
-        return (
-            JSON.stringify(request.body )
-        )
-    }
+morgan.token('postData',  (request) => {
+  if (request.method === 'POST') {
+    return (
+      JSON.stringify(request.body )
+    )
+  }
 })
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :postData'))
-
-
 
 
 
@@ -41,16 +39,15 @@ app.get('/', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-    Person.find({}).then(persons => {
-      response.json(persons)
-    })
+  Person.find({}).then(persons => {
+    response.json(persons)
+  })
 })
 
 app.get('/info', (request, response) => {
-  Person.countDocuments({}).then(count => { 
+  Person.countDocuments({}).then(count => {
     response.send(`Phonebook has info for ${count} people <br/><br/> ${new Date()}`)
   })
- 
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
@@ -66,9 +63,9 @@ app.get('/api/persons/:id', (request, response, next) => {
     .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndDelete(request.params.id)
-    .then(result => {
+    .then(() => {
       response.status(204).end()
     })
     .catch(error => next(error))
@@ -77,22 +74,22 @@ app.delete('/api/persons/:id', (request, response) => {
 
 app.post('/api/persons', (request, response, next) => {
   const body = request.body
- 
+
 
   if (!body.name || !body.number) {
-    return response.status(400).json({ 
-      error: 'Missing name or/and number' 
+    return response.status(400).json({
+      error: 'Missing name or/and number'
     })
   }
-  
+
   const person = new Person({
     name: body.name,
     number: body.number,
   })
   person.save().then(savedPerson => {
     response.json(savedPerson)
-  }) 
-  .catch(error => next(error))
+  })
+    .catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
@@ -101,7 +98,7 @@ app.put('/api/persons/:id', (request, response, next) => {
     name: body.content,
     number: body.number
   }
-  Person.findByIdAndUpdate(request.params.id, person, {new:true,  runValidators: true})
+  Person.findByIdAndUpdate(request.params.id, person, { new:true,  runValidators: true })
     .then(updatedPerson => {
       response.json(updatedPerson)
     })
@@ -120,7 +117,7 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
-  } 
+  }
   else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message })
   }
@@ -128,7 +125,6 @@ const errorHandler = (error, request, response, next) => {
 
   next(error)
 }
-
 
 // this has to be the last loaded middleware, also all the routes should be registered before this!
 app.use(errorHandler)
@@ -138,8 +134,3 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
 
-/*{
-    "id": "5",
-    "name": "Oggy",
-    "number": "94434112"
-}*/
